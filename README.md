@@ -30,7 +30,7 @@
 
 1.  **Clone the Repository**
     ```bash
-    git clone [https://github.com/YOUR_USERNAME/hexcore.git](https://github.com/YOUR_USERNAME/hexcore.git)
+    git clone https://github.com/sleepy-archive/HEXCORE.git
     cd hexcore
     ```
 
