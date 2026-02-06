@@ -1,0 +1,27 @@
+# Python compilation and cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+env/
+.env
+.conda/
+
+# IDE settings
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# HEXCORE Specific Data Directories
+# Prevent committing encrypted vault data and decrypted exports
+HEX_VAULT/
+HEX_EXPORTS/
+
+# Temporary or partial files
+*.hxc
+*.decrypted
