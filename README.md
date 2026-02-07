@@ -55,7 +55,7 @@ Well, this project was my first ever attempt to create a full-stack application 
 
 Even the README is vibe coded (sorry not sorry), but hey, it at least gets the point across with nice formatting, don't ya think (even if this text sounds a bit robotic) ??
 
-Also, encrypt or decrypt any data (sensitive or dummy) at your own risk! If you like the UI and want to test *that*, maybe write a dummy backend for the encryption engine—that way you can enjoy the visuals without trusting a freshman's math with your life secrets.
+Also, encrypt or decrypt any data (sensitive or dummy) at your own risk! If you like the UI and want to test *that*, maybe write a dummy backend for the encryption engine, that way you can enjoy the visuals without trusting a freshman's math with your life secrets.
 
 ---
 
