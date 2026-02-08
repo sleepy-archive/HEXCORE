@@ -31,7 +31,7 @@
 1.  **Clone the Repository**
     ```bash
     git clone https://github.com/sleepy-archive/HEXCORE.git
-    cd hexcore
+    cd HEXCORE
     ```
 
 2.  **Install Dependencies**
