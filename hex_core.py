@@ -40,6 +40,7 @@ class LayoutManager:
         # Loading state management
         self.loading: bool = False
         self.load_prog: float = 0.0
+        self.vis_load_prog: float = 0.0
         self.load_txt: str = ""
         
         # Backend Initialization
@@ -233,6 +234,7 @@ class LayoutManager:
         self.core.set_status(action)
         self.loading = True
         self.load_prog = 0.0
+        self.vis_load_prog = 0.0
         self.load_txt = action
         self.log.add_log_direct(f"INITIATING: {action}")
         
@@ -386,6 +388,10 @@ class LayoutManager:
         """
         self._process_queue() 
         
+        if self.loading:
+            # Smoothly interpolate visual progress towards actual progress (0.2 = fast but smooth)
+            self.vis_load_prog += (self.load_prog - self.vis_load_prog) * 0.2
+
         if self.picker.active:
             return self.picker.update()
         
@@ -475,9 +481,9 @@ class LayoutManager:
         
         # Progress Bar
         pygame.draw.rect(surf, (10, 15, 20), (br.x + 30, br.y + 90, 440, 20))
-        pygame.draw.rect(surf, p['accent'], (br.x + 30, br.y + 90, int(440 * self.load_prog), 20))
+        pygame.draw.rect(surf, p['accent'], (br.x + 30, br.y + 90, int(440 * self.vis_load_prog), 20))
         
-        pc = Assets.FONTS["SUB"].render(f"{int(self.load_prog * 100)}%", True, p['accent'])
+        pc = Assets.FONTS["SUB"].render(f"{int(self.vis_load_prog * 100)}%", True, p['accent'])
         surf.blit(pc, (br.right - 60, br.y + 65))
 
 class App:

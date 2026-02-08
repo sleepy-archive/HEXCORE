@@ -24,7 +24,7 @@ class CustomFilePicker:
         self.path: str = Config.get_initial_path()
         self.root_lock: Optional[str] = None
         self.batch_mode: bool = False
-        self.files: List[str] = []
+        self.files: List[Tuple[str, bool]] = []
         
         # Scrolling physics
         self.scroll_y: float = 0.0
@@ -34,6 +34,8 @@ class CustomFilePicker:
         self.last_click: int = 0
         self.selection_result: Optional[str] = None
         self.prompt_text: str = "SELECT FILE"
+        self.repeat_start_time: int = 0
+        self.last_repeat_time: int = 0
         
         # Pre-render the modal overlay
         self.overlay: pygame.Surface = pygame.Surface((Config.WIDTH, Config.HEIGHT))
@@ -88,7 +90,7 @@ class CustomFilePicker:
         try:
             # Verify read permissions before attempting to list
             if not os.access(self.path, os.R_OK):
-                self.files = ["<PERMISSION DENIED>"]
+                self.files = [("<PERMISSION DENIED>", False)]
                 return
 
             # os.scandir is more efficient as it retrieves file attribute info 
@@ -101,18 +103,18 @@ class CustomFilePicker:
                     if entry.name.startswith('.'):
                         continue
                     if entry.is_dir():
-                        dirs.append(entry.name)
+                        dirs.append((entry.name, True))
                     else:
-                        files.append(entry.name)
+                        files.append((entry.name, False))
                 
                 # Sort alphabetically, case-insensitive
-                dirs.sort(key=str.lower)
-                files.sort(key=str.lower)
+                dirs.sort(key=lambda x: x[0].lower())
+                files.sort(key=lambda x: x[0].lower())
                 
                 self.files = dirs + files
                 
         except OSError:
-            self.files = ["<ERROR READING DIRECTORY>"]
+            self.files = [("<ERROR READING DIRECTORY>", False)]
             
         self.sel_idx = 0 if self.files else -1
         self.tgt_scroll = 0
@@ -121,6 +123,19 @@ class CustomFilePicker:
     def update(self) -> None:
         """Update scrolling physics."""
         self.scroll_y += (self.tgt_scroll - self.scroll_y) * 0.2
+        
+        if self.active:
+            keys = pygame.key.get_pressed()
+            now = pygame.time.get_ticks()
+            
+            if now > self.repeat_start_time:
+                if now - self.last_repeat_time > 50:
+                    if keys[pygame.K_UP]:
+                        self.move_selection(-1)
+                        self.last_repeat_time = now
+                    elif keys[pygame.K_DOWN]:
+                        self.move_selection(1)
+                        self.last_repeat_time = now
 
     def ensure_visible(self) -> None:
         """Adjust scroll target to ensure the selected item is visible."""
@@ -143,6 +158,12 @@ class CustomFilePicker:
         elif item_bottom > vp_bottom:
             self.tgt_scroll = -(item_bottom - view_h)
 
+    def move_selection(self, delta: int) -> None:
+        """Safely move the selection index."""
+        if self.files:
+            self.sel_idx = max(0, min(len(self.files) - 1, self.sel_idx + delta))
+            self.ensure_visible()
+
     def handle(self, e: pygame.event.Event, mgr: Any) -> None:
         """
         Handle input events.
@@ -157,18 +178,16 @@ class CustomFilePicker:
                 mgr.log.add_log_direct("OPERATION CANCELLED")
             
             elif e.key == pygame.K_UP:
-                if self.files:
-                    self.sel_idx = max(0, self.sel_idx - 1)
-                    self.ensure_visible()
+                self.move_selection(-1)
+                self.repeat_start_time = pygame.time.get_ticks() + 400
             elif e.key == pygame.K_DOWN:
-                if self.files:
-                    self.sel_idx = min(len(self.files) - 1, self.sel_idx + 1)
-                    self.ensure_visible()
+                self.move_selection(1)
+                self.repeat_start_time = pygame.time.get_ticks() + 400
             elif e.key == pygame.K_RETURN or e.key == pygame.K_RIGHT:
                 if self.sel_idx != -1:
-                    self.navigate_or_select(self.sel_idx)
+                    self.navigate_or_select(self.sel_idx, mgr)
                 elif self.batch_mode and e.key == pygame.K_RETURN:
-                    self.do_action()
+                    self.do_action(mgr)
             elif e.key == pygame.K_BACKSPACE or e.key == pygame.K_LEFT:
                 if self.root_lock and os.path.abspath(self.path) == os.path.abspath(self.root_lock):
                     mgr.log.add_log_direct("ACCESS DENIED: VAULT ROOT LOCKED")
@@ -202,7 +221,7 @@ class CustomFilePicker:
                     mgr.log.add_log_direct("OPERATION CANCELLED")
 
                 elif self.btn_act.collidepoint(mx, my):
-                    self.do_action()
+                    self.do_action(mgr)
                 
                 if not self.batch_mode:
                     list_r = pygame.Rect(self.rect.x + 20, self.rect.y + 60, self.rect.w - 40, 280)
@@ -212,43 +231,46 @@ class CustomFilePicker:
                             now = pygame.time.get_ticks()
                             # Double click detection
                             if idx == self.sel_idx and now - self.last_click < 500:
-                                self.navigate_or_select(idx)
+                                self.navigate_or_select(idx, mgr)
                                 return
                             self.last_click = now
                             self.sel_idx = idx
 
-    def navigate_or_select(self, idx: int) -> None:
+    def navigate_or_select(self, idx: int, mgr: Any = None) -> None:
         """
         Enter a directory or select a file.
 
         Args:
             idx (int): The index of the file in self.files.
+            mgr (LayoutManager): Reference to manager for logging errors.
         """
         if idx < 0 or idx >= len(self.files):
             return 
         
-        f_name = self.files[idx]
+        f_name, is_dir = self.files[idx]
         if f_name.startswith("<"):
             return # Ignore error placeholders
 
         next_p = os.path.join(self.path, f_name)
         
-        if os.path.isdir(next_p):
+        if is_dir:
             if os.access(next_p, os.R_OK):
                 self.path = next_p
                 self.refresh()
+            elif mgr:
+                mgr.log.add_log_direct("ACCESS DENIED")
         else:
             self.selection_result = next_p
             self.active = False
 
-    def do_action(self) -> None:
+    def do_action(self, mgr: Any = None) -> None:
         """Confirm the current selection."""
         if self.batch_mode:
             self.selection_result = self.path
             self.active = False
         else:
             if self.sel_idx != -1:
-                self.navigate_or_select(self.sel_idx)
+                self.navigate_or_select(self.sel_idx, mgr)
 
     def draw(self, surf: pygame.Surface, p: Any) -> None:
         """
@@ -287,13 +309,10 @@ class CustomFilePicker:
         end_index = min(len(self.files), start_index + (280 // 35) + 2)
 
         for i in range(start_index, end_index):
-            f = self.files[i]
+            f, is_dir = self.files[i]
             fy = sy + i * 35
             
             sel = (i == self.sel_idx)
-            # Note: os.path.isdir is called here for rendering icons. 
-            # Since we cull the view, this only happens ~10 times per frame, which is acceptable.
-            is_dir = os.path.isdir(os.path.join(self.path, f)) if not f.startswith("<") else False
             
             if sel:
                 pygame.draw.rect(surf, p['dim'], (lr.x, fy, lr.w, 30))
@@ -322,9 +341,9 @@ class CustomFilePicker:
         act_col = p['accent'] if self.batch_mode else p['dim']
         if not self.batch_mode and self.sel_idx != -1:
             if 0 <= self.sel_idx < len(self.files):
-                fname = self.files[self.sel_idx]
+                fname, is_dir = self.files[self.sel_idx]
                 if not fname.startswith("<"):
-                    act_txt = "OPEN FOLDER" if os.path.isdir(os.path.join(self.path, fname)) else "SELECT FILE"
+                    act_txt = "OPEN FOLDER" if is_dir else "SELECT FILE"
                     act_col = p['accent']
         
         Graphics.draw_chamfered_rect(surf, self.btn_act, p['fill'], 0)
