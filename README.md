@@ -6,11 +6,11 @@
 ![Security](https://img.shields.io/badge/Security-AES--GCM-red?style=flat&logo=lock)
 ![Sprint](https://img.shields.io/badge/Status-72h_Speedrun-orange?style=flat&logo=clock)
 
-> ⚡ **Context:** This entire architecture—from the threaded backend to the custom UI—was engineered and "vibe coded" in a single **72-hour weekend sprint** (for now).
+> ⚡ **Context:** This entire architecture—from the threaded backend to the custom UI—was engineered and rapidly prototyped in a single **72-hour weekend sprint** (for now).
 
 ---
 
-## 📸 The Vibe Check
+## 🎨 The Eye Candy
 
 <p align="center">
   <img src="assets/demo_login.png" width="45%" alt="Secure Login Screen" style="border-radius: 5px;">
@@ -49,11 +49,11 @@
 
 ---
 
-## <img src="assets/anime_gif_1.gif" height="30" width="30" style="vertical-align:middle"/> Developer's Log
+## <img src="assets/anime_oops.gif" height="30" width="30" style="vertical-align:middle"/> Developer's Log
 
-Well, this project was my first ever attempt to create a full-stack application (I'm a freshman), and I mostly "vibe coded" to get my feet wet. But I will be coming back to this project to maintain and heavily modify it. By the time of graduation, I intend for this application to be at least production-grade.
+Well, this project was my first ever attempt to create a full-stack application (I'm a freshman), and I mostly experimented with AI-assisted coding to get my feet wet. But I will be coming back to this project to maintain and heavily modify it. By the time of graduation, I intend for this application to be at least production-grade.
 
-Even the README is vibe coded (sorry not sorry), but hey, it at least gets the point across with nice formatting, don't ya think (even if this text sounds a bit robotic) ??
+Even the README was generated quickly (sorry not sorry), but hey, it at least gets the point across with nice formatting, don't ya think (even if this text sounds a bit robotic) ??
 
 Also, encrypt or decrypt any data (sensitive or dummy) at your own risk! If you like the UI and want to test *that*, maybe write a dummy backend for the encryption engine, that way you can enjoy the visuals without trusting a freshman's math with your life secrets.
 
