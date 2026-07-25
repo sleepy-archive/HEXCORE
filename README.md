@@ -57,27 +57,6 @@ Even the README was generated quickly (sorry not sorry), but hey, it at least ge
 
 Also, encrypt or decrypt any data (sensitive or dummy) at your own risk! If you like the UI and want to test *that*, maybe write a dummy backend for the encryption engine, that way you can enjoy the visuals without trusting a freshman's math with your life secrets.
 
----
-
-## 🗺️ Future Roadmap
-I am not abandoning this project. This repo is my long-term testbed for distributed security concepts.
-
-### 🧱 Core & Architecture
-- [ ] **Reliability:** Write a unit test script to stress-test 1,000 auto-encrypt/decrypt cycles.
-- [ ] **Headless Mode:** Implement `argparse` so the engine runs on Linux servers without a monitor.
-- [ ] **Dockerization:** Containerize the backend for one-click deployment across any OS.
-
-### 🌐 Network & Cloud
-- [ ] **The Air-Gapped Vault:** Port the backend to a **Raspberry Pi** using a custom raw TCP protocol (avoiding HTTP/Flask overhead).
-- [ ] **Database Integration:** Replace text logs with SQLite/PostgreSQL for enterprise-grade audit trails.
-
-### 🛡️ Advanced Security
-- [ ] **ML Guard:** Train a model to detect "bot-like" mouse movements and auto-lock the vault.
-- [ ] **Red Teaming:** Open the server to peer pentesting to identify and patch real-world exploits.
-- [ ] **Hardware Keys:** Experiment with physical key authentication for multi-factor access.
-
----
-
 ## ⚖️ License
 
 Distributed under the MIT License. See `LICENSE` for more information.
